@@ -1,7 +1,7 @@
 import "./vpc";
 import "./securityGroup";
 import "./eks";
-import "./node-group";
+import "./nodeGroup";
 
 //Deployment:
 import "./deployment/nginx";
