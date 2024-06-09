@@ -1,0 +1,5 @@
+.env
+.pulumi
+dist
+node_modules
+structure.md

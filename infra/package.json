@@ -1,0 +1,16 @@
+{
+    "name": "test-pulumi",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/js-yaml": "^4.0.9",
+        "@types/node": "^18",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/aws": "^6.0.0",
+        "@pulumi/awsx": "^2.0.2",
+        "@pulumi/eks": "^2.6.0",
+        "@pulumi/kubernetes": "^4.13.1",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}

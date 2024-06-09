@@ -1,0 +1,83 @@
+config:
+  aws:region: ap-southeast-1
+  vpc:
+    name: dev-vpc
+    cidr: "10.0.0.0/16"
+    numberOfAvailabilityZones: 1
+    natGateway:
+      strategy: Single
+    securityGroups:
+      - name: allow-http-sg
+        description: "Allow http/https traffic"
+        ingress:
+          - fromPort: 80
+            toPort: 80
+            protocol: "tcp"
+            cidrBlocks: "0.0.0.0/0"
+          - fromPort: 443
+            toPort: 443
+            protocol: "tcp"
+            cidrBlocks: "0.0.0.0/0"
+        egress:
+          - fromPort: 0
+            toPort: 0
+            protocol: "-1"
+            cidrBlocks: "0.0.0.0/0"
+      - name: allow-prometheus-sg
+        description: "Allow prometheus traffic"
+        ingress:
+          - fromPort: 9090
+            toPort: 9090
+            protocol: "tcp"
+            cidrBlocks: "0.0.0.0/0"
+        egress:
+          - fromPort: 0
+            toPort: 0
+            protocol: "-1"
+            cidrBlocks: "0.0.0.0/0"
+  eks:
+    clusterName: dev-eks-cluster
+    nodeAssociatePublicIpAddress: false
+  nodeGroup:
+    - name: dev-spot-nodegroup-1
+      instanceType: t2.micro
+      desiredCapacity: 1
+      minSize: 1
+      maxSize: 3
+      nodeRootVolumeSize: 20
+      spotPrice: "0.01"
+      autoScalingGroupTags:
+        - key: "k8s.io/cluster-autoscaler/enabled"
+          value: "true"
+        - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-1"
+          value: "true"
+      # tags:
+      #   - key: "team"
+      #     value: "devops"
+      #   - key: "service"
+      #     value: "devops-technical-challenge"
+      #   - key: "env"
+      #     value: "dev"
+    - name: dev-spot-nodegroup-2
+      instanceType: t2.micro
+      desiredCapacity: 1
+      minSize: 1
+      maxSize: 3
+      nodeRootVolumeSize: 20
+      spotPrice: "0.02"
+      autoScalingGroupTags:
+        - key: "k8s.io/cluster-autoscaler/enabled"
+          value: "true"
+        - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-2"
+          value: "true"
+      taints:
+        - key: "application"
+          value: "dedicated "
+          effect: "NoSchedule"
+  tags:
+    - key: "team"
+      value: "devops"
+    - key: "service"
+      value: "devops-technical-challenge"
+    - key: "env"
+      value: "dev"

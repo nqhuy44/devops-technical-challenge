@@ -1,0 +1,4 @@
+config:
+  aws:region: ap-southeast-1
+  nqhuy-devops-technical-challenge:stack: prod
+  

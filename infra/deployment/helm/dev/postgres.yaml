@@ -1,0 +1,6 @@
+auth:
+  enablePostgresUser: true
+  postgresPassword: "${POSTGRES_PASSWORD}"
+  username: "${USERNAME}"
+  password: "${PASSWORD}"
+  database: "${DATABASE}"

@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service-blue
+  labels:
+    app: webapp
+    version: blue
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: webapp
+    version: blue
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service-green
+  labels:
+    app: webapp
+    version: green
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: webapp
+    version: green

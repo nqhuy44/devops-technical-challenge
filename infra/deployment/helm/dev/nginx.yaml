@@ -1,0 +1,5 @@
+controller:
+  kind: DeamonSet
+  replicaCount: 1
+  service:
+    type: LoadBalancer
