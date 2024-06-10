@@ -7,31 +7,34 @@ import * as roles from "../iam/iamRoles";
 
 const oidcProvider = cluster.core.oidcProvider;
 
-
-// Create a ServiceAccount
-const serviceAccount = new k8s.core.v1.ServiceAccount("admin-sa", {
-    metadata: {
-        name: "admin-sa",
-        namespace: "kube-system",
-        annotations: {
-            "eks.amazonaws.com/role-arn": roles.webappAdminRole.arn,
+try {
+    // Create a ServiceAccount
+    const serviceAccount = new k8s.core.v1.ServiceAccount("admin-sa", {
+        metadata: {
+            name: "admin-sa",
+            namespace: "kube-system",
+            annotations: {
+                "eks.amazonaws.com/role-arn": roles.webappAdminRole.arn,
+            },
         },
-    },
-}, { provider: cluster.provider });
+    }, { provider: cluster.provider });
 
-// Create a ClusterRoleBinding to bind the ServiceAccount to the cluster-admin role
-const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding("adminClusterRoleBinding", {
-    metadata: {
-        name: "admin-crb",
-    },
-    subjects: [{
-        kind: "ServiceAccount",
-        name: "admin-sa",
-        namespace: "kube-system",
-    }],
-    roleRef: {
-        kind: "ClusterRole",
-        name: "cluster-admin",
-        apiGroup: "rbac.authorization.k8s.io",
-    },
-}, { provider: cluster.provider });
+    // Create a ClusterRoleBinding to bind the ServiceAccount to the cluster-admin role
+    const clusterRoleBinding = new k8s.rbac.v1.ClusterRoleBinding("adminClusterRoleBinding", {
+        metadata: {
+            name: "admin-crb",
+        },
+        subjects: [{
+            kind: "ServiceAccount",
+            name: "admin-sa",
+            namespace: "kube-system",
+        }],
+        roleRef: {
+            kind: "ClusterRole",
+            name: "cluster-admin",
+            apiGroup: "rbac.authorization.k8s.io",
+        },
+    }, { provider: cluster.provider });
+} catch (error) {
+    console.error(`Failed to provision the admin ServiceAccount: ${error}`);
+}

@@ -25,13 +25,18 @@ spec:
         ports:
         - name: webapp
           containerPort: 3000
-        envFrom:
-        - configMapRef:
-            name: webapp-config
         livenessProbe:
           httpGet:
             path: /health
             port: 3000
+        volumeMounts:
+          - name: config-volume-blue
+            mountPath: /app/.env
+            subPath: .env
+      volumes:
+        - name: config-volume-blue
+          configMap:
+            name: webapp-config-blue
 
 ---
 apiVersion: apps/v1
@@ -61,10 +66,15 @@ spec:
         ports:
         - name: webapp
           containerPort: 3000
-        envFrom:
-        - configMapRef:
-            name: webapp-config-green
         livenessProbe:
           httpGet:
             path: /health
             port: 3000
+        volumeMounts:
+          - name: config-volume-green
+            mountPath: /app/.env
+            subPath: .env
+      volumes:
+        - name: config-volume-green
+          configMap:
+            name: webapp-config-green

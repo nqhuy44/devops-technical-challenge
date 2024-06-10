@@ -12,12 +12,11 @@ const environment = pulumi.getStack();
 const kustomizeDir = `${__dirname}/kustomize/${environment}`;
 
 // Use Kustomize to deploy the resources
-const k8sResources = new k8sx.Directory("web-app", {
-    directory: kustomizeDir,
-}, { provider });
-
-// Export some of the resources' properties, if needed
-// export const deploymentName = k8sResources.resources.apply(resources => {
-//     const deployment = resources.find(resource => resource.kind === "Deployment");
-//     return deployment ? deployment.metadata.name : "no-deployment-found";
-// });
+try {
+    const k8sResources = new k8sx.Directory("web-app", {
+        directory: kustomizeDir,
+    }, { provider });
+}
+catch (error) {
+    console.error(`Failed to deploy the webapp resources: ${error}`);
+}
