@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Copy the rest of the application code
-COPY . .
+COPY ./src ./src
 # Compile TypeScript to JavaScript
 RUN npm run build
 
