@@ -64,7 +64,7 @@ jobs:
 
   dockerize:
     name: Dockerize
-    # needs: lint-and-test
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
