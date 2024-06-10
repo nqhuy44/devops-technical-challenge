@@ -15,6 +15,12 @@ export interface SecurityGroupConfig {
     }>;
 }
 
+interface SubnetConfig {
+    type: string;
+    cidrMask: Number;
+    name: string;
+}
+
 export interface NodeConfig {
     name: string;
     amiId: string;

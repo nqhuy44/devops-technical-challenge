@@ -5,6 +5,7 @@ metadata:
   name: webapp-deployment
   labels:
     app: webapp
+  namespace: webapp
 spec:
   replicas: 3
   selector:

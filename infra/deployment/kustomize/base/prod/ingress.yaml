@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: webapp-ingress
+  namespace: webapp
 spec:
   rules:
   - host: blue.my-domain.com

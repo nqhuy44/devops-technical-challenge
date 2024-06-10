@@ -3,11 +3,18 @@ config:
   vpc:
     name: dev-vpc
     cidr: "10.0.0.0/16"
-    numberOfAvailabilityZones: 1
+    numberOfAvailabilityZones: 2
     natGateway:
       strategy: Single
+    subnets:
+      - name: dev-public-subnet-1
+        cidrMask: 24
+        type: Public
+      - name: dev-private-subnet-1
+        cidrMask: 24
+        type: Private
     securityGroups:
-      - name: allow-http-sg
+      - name: dev-allow-http-sg
         description: "Allow http/https traffic"
         ingress:
           - fromPort: 80
@@ -23,7 +30,7 @@ config:
             toPort: 0
             protocol: "-1"
             cidrBlocks: "0.0.0.0/0"
-      - name: allow-prometheus-sg
+      - name: dev-allow-prometheus-sg
         description: "Allow prometheus traffic"
         ingress:
           - fromPort: 9090
@@ -37,20 +44,22 @@ config:
             cidrBlocks: "0.0.0.0/0"
   eks:
     clusterName: dev-eks-cluster
+    version: "1.30"
     nodeAssociatePublicIpAddress: false
+    minSize: 1
   nodeGroup:
     - name: dev-spot-nodegroup-1
-      instanceType: t2.micro
+      instanceType: t3.medium
       desiredCapacity: 1
       minSize: 1
       maxSize: 3
       nodeRootVolumeSize: 20
-      spotPrice: "0.01"
-      autoScalingGroupTags:
-        - key: "k8s.io/cluster-autoscaler/enabled"
-          value: "true"
-        - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-1"
-          value: "true"
+      spotPrice: "0.0176"
+      # autoScalingGroupTags:
+      #   - key: "k8s.io/cluster-autoscaler/enabled"
+      #     value: "true"
+      #   - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-1"
+      #     value: "true"
       # tags:
       #   - key: "team"
       #     value: "devops"
@@ -58,22 +67,22 @@ config:
       #     value: "devops-technical-challenge"
       #   - key: "env"
       #     value: "dev"
-    - name: dev-spot-nodegroup-2
-      instanceType: t2.micro
-      desiredCapacity: 1
-      minSize: 1
-      maxSize: 3
-      nodeRootVolumeSize: 20
-      spotPrice: "0.02"
-      autoScalingGroupTags:
-        - key: "k8s.io/cluster-autoscaler/enabled"
-          value: "true"
-        - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-2"
-          value: "true"
-      taints:
-        - key: "application"
-          value: "dedicated "
-          effect: "NoSchedule"
+    # - name: dev-spot-nodegroup-2
+    #   instanceType: t2.micro
+    #   desiredCapacity: 1
+    #   minSize: 1
+    #   maxSize: 3
+    #   nodeRootVolumeSize: 20
+    #   spotPrice: "0.02"
+    #   autoScalingGroupTags:
+    #     - key: "k8s.io/cluster-autoscaler/enabled"
+    #       value: "true"
+    #     - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-2"
+    #       value: "true"
+    #   taints:
+    #     - key: "application"
+    #       value: "dedicated "
+    #       effect: "NoSchedule"
   tags:
     - key: "team"
       value: "devops"

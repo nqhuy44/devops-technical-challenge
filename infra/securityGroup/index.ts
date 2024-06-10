@@ -24,6 +24,7 @@ securityGroupConfig.forEach((sg: SecurityGroupConfig) => {
             cidrBlocks: [rule.cidrBlocks],
         })),
         tags: {
+            Name: sg.name,
             ...tags,
         }
     });

@@ -5,6 +5,7 @@ metadata:
   labels:
     app: webapp
     version: blue
+  namespace: webapp
 spec:
   type: ClusterIP
   ports:
@@ -22,6 +23,7 @@ metadata:
   labels:
     app: webapp
     version: green
+  namespace: webapp
 spec:
   type: ClusterIP
   ports:

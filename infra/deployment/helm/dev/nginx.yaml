@@ -2,4 +2,5 @@ controller:
   kind: DeamonSet
   replicaCount: 1
   service:
+    annotations: {}
     type: LoadBalancer

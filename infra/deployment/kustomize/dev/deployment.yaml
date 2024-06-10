@@ -6,6 +6,7 @@ metadata:
   labels:
     app: webapp
     environment: dev
+  namespace: webapp
 spec:
   replicas: 1
   selector:

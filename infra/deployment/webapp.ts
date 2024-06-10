@@ -3,6 +3,8 @@ import * as k8s from "@pulumi/kubernetes";
 import * as k8sx from "@pulumi/kubernetes/kustomize";
 import { provider } from "../eks";
 
+const namespace = new k8s.core.v1.Namespace("webapp", {}, { provider });
+
 // Define the current environment (dev or prod)
 const environment = pulumi.getStack();
 

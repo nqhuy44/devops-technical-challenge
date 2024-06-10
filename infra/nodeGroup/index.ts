@@ -4,28 +4,18 @@ import * as aws from "@pulumi/aws";
 import * as k8s from "@pulumi/kubernetes";
 import { eksConfig, nodeGroupConfig, tags } from "../config";
 import { NodeConfig } from "../interface";
-import { cluster } from "../eks"
+import { cluster, nodeGroupRole } from "../eks"
 
-// Create an IAM role for the node group
-const nodeGroupRole = new aws.iam.Role("nodeGroupRole", {
-    assumeRolePolicy: aws.iam.assumeRolePolicyForPrincipal({ Service: "ec2.amazonaws.com" }),
-});
-
-// Attach the AmazonEKSWorkerNodePolicy to the node group role
-const nodeGroupRolePolicyAttachment = new aws.iam.RolePolicyAttachment("nodeGroupRolePolicyAttachment", {
-    role: nodeGroupRole.name,
-    policyArn: aws.iam.ManagedPolicy.AmazonEKSWorkerNodePolicy,
-});
-const nodeGroupRolePolicyAttachmentForECR = new aws.iam.RolePolicyAttachment("nodeGroupRolePolicyAttachmentForECR", {
-    role: nodeGroupRole.name,
-    policyArn: aws.iam.ManagedPolicy.AmazonEC2ContainerRegistryReadOnly,
+// Create an instance profile for the node group role
+const instanceProfile = new aws.iam.InstanceProfile("nodeGroupInstanceProfile", {
+    role: nodeGroupRole,
 });
 
 // Create an EKS Node Group V2 with autoscaling configuration
-
 const nodeAnnotations: String[] = [];
 nodeGroupConfig.forEach((node: NodeConfig) => {
-    const nodetains = node.taints && node.taints.length > 0 ? node.taints.reduce((acc, taint) => ({...acc, [`${taint.key}=${taint.value}:${taint.effect}`]: taint}), {}) : {};    new eks.NodeGroupV2(node.name, {
+    const nodetains = node.taints && node.taints.length > 0 ? node.taints.reduce((acc, taint) => ({...acc, [`${taint.key}=${taint.value}:${taint.effect}`]: taint}), {}) : {};
+    new eks.NodeGroupV2(node.name, {
         cluster: cluster,
         instanceType: node.instanceType,
         desiredCapacity: node.desiredCapacity,
@@ -36,6 +26,7 @@ nodeGroupConfig.forEach((node: NodeConfig) => {
         nodeRootVolumeSize: node.nodeRootVolumeSize ? node.nodeRootVolumeSize : undefined,
         taints: nodetains,
         // tags: node.tags,
+        instanceProfile: instanceProfile,
     });
     nodeAnnotations.push(`--nodes=${node.minSize}:${node.maxSize}:${eksConfig.clusterName}`);
 });
@@ -45,6 +36,7 @@ const clusterAutoscaler = new k8s.yaml.ConfigFile("cluster-autoscaler", {
     transformations: [
         (obj: any) => {
             if (obj.kind === "Deployment" && obj.metadata.name === "cluster-autoscaler") {
+                obj.spec.replicas = 1;
                 obj.spec.template.spec.containers[0].command.push(
                     ...nodeAnnotations
                 );

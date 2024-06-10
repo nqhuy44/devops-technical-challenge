@@ -6,6 +6,7 @@ metadata:
     app: webapp
     environment: prod
     version: blue
+  namespace: webapp
 spec:
   replicas: 3
   selector:
@@ -41,6 +42,7 @@ metadata:
     app: webapp
     environment: prod
     version: green
+  namespace: webapp
 spec:
   replicas: 3
   selector:
