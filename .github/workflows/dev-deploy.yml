@@ -12,7 +12,7 @@ on:
 env:
   # AWS_REGION: ${{ secrets.AWS_REGION }}
   # ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-  IMAGE_TAG: ${{GITHUB_SHA::6}}
+  IMAGE_TAG: ${GITHUB_SHA::6}
   ENVIRONMENT: dev
   env: dev
 
