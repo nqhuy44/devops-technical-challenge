@@ -6,7 +6,7 @@ import { vpcConfig, tags } from "../config";
 
 const securityGroupConfig = vpcConfig.securityGroups;
 
-const securityGroups: aws.ec2.SecurityGroup[] = [];
+const securityGroupIds: pulumi.Output<string>[] = [];
 
 try {
     securityGroupConfig.forEach((sg: SecurityGroupConfig) => {
@@ -31,10 +31,11 @@ try {
                 ...tags,
             }
         });
-        securityGroups.push(securityGroup);
+        securityGroupIds.push(securityGroup.id);
     });
 } catch (error) {
     console.error(`Failed to provision security groups: ${error}`);
 }
 
-export { securityGroups };
+const securityGroupIdsOutput = pulumi.all(securityGroupIds);
+export { securityGroupIdsOutput };

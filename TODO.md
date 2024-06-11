@@ -2,7 +2,7 @@
 ## 1. TLS/SSL
 ### Route53
 - Provision a domain
-- Create CNAME record point to loadbalancer which created when deploy `nginx ingress controller`
+- Create CNAME record point to loadbalancer which created when deploy ingress controller
 ### ACM
 - Request public certificate for domain
 - DNS validation and add the CNAME record provided by ACM to Route 53

@@ -55,11 +55,6 @@ config:
       maxSize: 3
       nodeRootVolumeSize: 20
       spotPrice: "0.0176"
-      # autoScalingGroupTags:
-      #   - key: "k8s.io/cluster-autoscaler/enabled"
-      #     value: "true"
-      #   - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-1"
-      #     value: "true"
       # tags:
       #   - key: "team"
       #     value: "devops"
@@ -74,11 +69,6 @@ config:
     #   maxSize: 3
     #   nodeRootVolumeSize: 20
     #   spotPrice: "0.02"
-    #   autoScalingGroupTags:
-    #     - key: "k8s.io/cluster-autoscaler/enabled"
-    #       value: "true"
-    #     - key: "k8s.io/cluster-autoscaler/dev-spot-nodegroup-2"
-    #       value: "true"
     #   taints:
     #     - key: "application"
     #       value: "dedicated "

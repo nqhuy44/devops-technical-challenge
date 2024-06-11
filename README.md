@@ -194,7 +194,7 @@ To udpate infastructure configuration, update config parameters in `Pulumi.<stac
 
 ## Github
 ### Environment and Secrets:
-These environment secrets are require for CI/CD
+These environment secrets are required for CI/CD
 ```bash
 AWS_ACCESS_KEY_ID 
 AWS_REGION

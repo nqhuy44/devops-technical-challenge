@@ -8,6 +8,7 @@ import "./nodeGroup";
 import "./iam";
 
 //Deployment:
-import "./deployment/nginx";
-// import "./deployment/postgres";
+import "./deployment/nginx.ts";
+import "./deployment/postgres";
 import "./deployment/webapp";
+import "./deployment/prometheus";
