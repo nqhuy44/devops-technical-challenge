@@ -107,7 +107,13 @@ jobs:
         run: |
           aws ecr start-image-scan --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
           aws ecr wait image-scan-complete --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
-          aws ecr describe-image-scan-findings --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
+          SCAN_RESULTS=$(aws ecr describe-image-scan-findings --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG)
+          echo "$SCAN_RESULTS"
+          COUNT_HIGH=$(echo "$SCAN_RESULTS" | jq '.imageScanFindings.findingSeverityCounts.HIGH')
+          if [ "$COUNT_HIGH" -gt 0 ]; then
+            echo "High vulnerability detected!"
+            exit 1
+          fi
 
   deploy:
     name: Deploy
@@ -142,6 +148,3 @@ jobs:
           stack-name: dev
           command: |
             pulumi up --yes
-          secrets: |
-            - name: PULUMI_ACCESS_TOKEN
-              env: PULUMI_ACCESS_TOKEN
