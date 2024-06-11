@@ -85,14 +85,14 @@ jobs:
 
       - name: Set IMAGE_TAG
         id: set_tag
-        run: git rev-parse --short "$GITHUB_SHA"
+        run: echo "::set-output name=tag::$(git rev-parse --short "$GITHUB_SHA")"
 
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.set_tag.outputs }}
+          IMAGE_TAG: ${{ steps.set_tag.outputs.tag }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -103,7 +103,7 @@ jobs:
       - name: Scan Docker image
         env:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.set_tag.outputs }}
+          IMAGE_TAG: ${{ steps.set_tag.outputs.tag }}
         run: |
           aws ecr start-image-scan --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
           aws ecr wait image-scan-complete --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
