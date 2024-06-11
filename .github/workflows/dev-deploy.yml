@@ -118,20 +118,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Setup npm
+        run: npm install
+        working-directory: infra
+
       - name: Deploy Pulumi stack
-        uses: pulumi/action@v3
+        uses: pulumi/actions@v5
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_HOST: ${{ secrets.DB_HOST }}
         with:
+          work-dir: infra
+          stack-name: dev
           command: |
-            cd infra
-            pulumi stack select dev
             pulumi up --yes
           secrets: |
             - name: PULUMI_ACCESS_TOKEN
