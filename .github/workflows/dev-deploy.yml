@@ -125,7 +125,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-region: ${{ secrets.AWS_REGION }}
@@ -146,5 +146,4 @@ jobs:
         with:
           work-dir: infra
           stack-name: dev
-          command: |
-            pulumi up --yes
+          command: up
