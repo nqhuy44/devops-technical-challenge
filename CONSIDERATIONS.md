@@ -12,20 +12,34 @@ Not recommend to provision database inside cluster (in prod) should use individu
 **There are more things to setup:**
 ***Provision in cluster***
     - Dedicate nodegroup for database (prevent resource appropriation)
-    - Dedicate storage for database - persistent volume
+    - Persist data for database - persistent volume
     - Ingress or Network expose if database is used from external applications
     - Backup mechanism
 ***Use database services***
     - Provision database service example AWS RDS
     - Use Secret Manager to store database connection string
 
-### Performance
+### Database Performance
 The Application can need high IOPS or connection dedicated to have a good performance. If database lack of iops or connection reception it can cause decrease of application's performance
 - **Read-Write Separation**: If the application requires high IOPS, implementing a layer to separate read and write operations
 - **Dedicated Instance for Read Operations**: Allocating a dedicated instance for handling read operations can further enhance performance.
 - **Connection Pooling**: Connection pooling maintaining a cache of database connections that can be reused when future requests to the database are required, reducing the overhead of establishing a new connection for every request.
-  
-## 2. Cluster Complexity
+
+## 2. Network Performance
+This repository uses the `nginx ingress controller` as the ingress and creates an AWS Classic LoadBalancer. The AWS Classic LoadBalancer (CLB) has lower performance compared to the Network LoadBalancer (NLB).
+- CLB is a reliable and cost-effective choice for simple load balancing of traffic across multiple EC2 instances, while the NLB is designed to handle tens of millions of requests per second while maintaining high throughput at ultra-low latency, with no effort on your part.
+- Consider upgrading to a NLB if application requires high-performance, low latency, and high throughput. Also, if application needs to handle a sudden and unpredictable traffic pattern, NLB can scale without needing to pre-warm.
+
+However, keep in mind that this might involve changes to your infrastructure and potential downtime during the migration. Always ensure to test these changes thoroughly in a non-production environment before implementing them in production.
+
+***Infrastructure change if need to switch to NLB***
+  - Install AWS Load Balancer Controller using helm
+  - Update ingress configuration to use AWS Load Balancer Controller by using annotation
+  - Gradually rampdown nginx ingress controller.
+  - *Optional can use combie AWS Load Balancer Controller to create NLB and nginx ingress controller to distribute request to services*
+
+
+## 3. Cluster Complexity
 
 Managing a cluster that runs multiple applications or services can increase the complexity of deployment and infrastructure provisioning. This complexity is further amplified if the repository containing the application code also handles infrastructure provisioning.
 
@@ -41,7 +55,7 @@ To manage complexity is to use a platform or tool that can synchronize the manif
 - Centralize deployments and operations of multi cluster into one platform is esier to manage and operate
 
 
-## 3. Application architecture
+## 4. Application architecture
 When designing application, consider the most suitable compute orchestration platform. The choice between Kubernetes, serverless architectures (like AWS Lambda), or container services (like ECS) depends on application's specific needs and constraints.
 
 ### Serverless Compute (example: AWS Lambda)
@@ -63,7 +77,7 @@ When designing application, consider the most suitable compute orchestration pla
 - Ideal for applications that require a quick, simple deployment process without the need for extensive infrastructure management.
 - However, they may offer less control over the runtime environment compared to serverless or container services.
 
-## 4. Security
+## 5. Security
 ### Cluster Security
 - Implemented AWS IAM role associated with Cluster Service account to grant permission a group/user can access cluster but need to provision to prevent user place in wrong IAM Group
 - Least Privilege: Ensure IAM roles and policies follow the least privilege
