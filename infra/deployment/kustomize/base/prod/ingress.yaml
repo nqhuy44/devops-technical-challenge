@@ -5,7 +5,7 @@ metadata:
   namespace: webapp
 spec:
   rules:
-  - host: blue.my-domain.com
+  - host: my-domain.com
     http:
       paths:
       - pathType: Prefix
@@ -15,7 +15,7 @@ spec:
             name: webapp-service-blue
             port:
               number: 3000
-  - host: green.my-domain.com
+  - host: test.my-domain.com
     http:
       paths:
       - pathType: Prefix

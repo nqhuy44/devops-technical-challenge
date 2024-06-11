@@ -13,7 +13,7 @@ commonLabels:
 configMapGenerator:
 - name: webapp-config-blue
   files:
-    - .env.blue
+    - .env
 - name: webapp-config-green
   files:
-    - .env.green
+    - .env

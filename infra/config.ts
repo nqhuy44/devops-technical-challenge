@@ -8,3 +8,4 @@ export const eksConfig = config.requireObject<any>("eks");
 export const nodeGroupConfig = config.requireObject<any>("nodeGroup");
 
 export const tags = tagConfig && tagConfig.length > 0 ? Object.fromEntries(tagConfig.map(tag => [tag.key, tag.value])) : {};
+export const deployment = config.get<any>("deployment");

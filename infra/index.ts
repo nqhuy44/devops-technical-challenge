@@ -5,9 +5,9 @@ import "./eks";
 import "./nodeGroup";
 
 //IAM
-// import "./iam";
+import "./iam";
 
 //Deployment:
 import "./deployment/nginx";
 // import "./deployment/postgres";
-// import "./deployment/webapp";
+import "./deployment/webapp";

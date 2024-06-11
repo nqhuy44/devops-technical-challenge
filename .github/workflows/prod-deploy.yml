@@ -3,10 +3,10 @@ name: Prod deployment
 on:
   push:
     branches:
-      - test
+      - main
   pull_request:
     branches:
-      - test
+      - main
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -34,8 +34,8 @@ jobs:
     - name: Build
       run: npm run build
 
-  # lint-and-test:
-  #   name: Lint and test
+  # lint:
+  #   name: Lint
   #   needs: build
   #   runs-on: ubuntu-latest
 
@@ -46,10 +46,12 @@ jobs:
   #   - name: Use Node.js
   #     uses: actions/setup-node@v4
   #     with:
-  #       node-version: 14
+  #       node-version: 20.x
 
-  #   - name: Install dependencies
-  #     run: npm ci
+  #   - Download build artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: build-artifacts
 
   #   - name: Lint
   #     run: npm run lint
@@ -57,63 +59,113 @@ jobs:
   #   - name: Test
   #     run: npm run test
 
+  # unit-test:
+  #   name: Unit test
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+
+  #   - name: Use Node.js
+  #     uses: actions/setup-node@v4
+  #     with:
+  #       node-version: 20.x
+
+  #   - Download build artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: build-artifacts
+
+  #   - name: Test
+  #     run: npm run test
+
   dockerize:
     name: Dockerize
-    needs: lint-and-test
+    needs: build
     runs-on: ubuntu-latest
+    environment: dev
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ env.IMAGE_TAG }}
-        ENVIRONMENT: ${{ env.ENVIRONMENT }}
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
+      - name: Set IMAGE_TAG
+        id: set_tag
+        run: echo "::set-output name=tag::$(git rev-parse --short "$GITHUB_SHA")"
 
-    - name: Scan Docker image
-      run: |
-        aws ecr start-image-scan --repository-name ${{ env.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
-        aws ecr wait image-scan-complete --repository-name ${{ env.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
-        aws ecr describe-image-scan-findings --repository-name ${{ env.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.set_tag.outputs.tag }}
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
+
+      - name: Scan Docker image
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.set_tag.outputs.tag }}
+        run: |
+          aws ecr start-image-scan --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
+          aws ecr wait image-scan-complete --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
+          SCAN_RESULTS=$(aws ecr describe-image-scan-findings --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG)
+          echo "$SCAN_RESULTS"
+          COUNT_HIGH=$(echo "$SCAN_RESULTS" | jq '.imageScanFindings.findingSeverityCounts.HIGH')
+          if [ "$COUNT_HIGH" -gt 0 ]; then
+            echo "High vulnerability detected!"
+            exit 1
+          fi
 
   deploy:
     name: Deploy
     needs: dockerize
     runs-on: ubuntu-latest
+    environment: dev
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Deploy Pulumi stack
-      uses: pulumi/action@v3
-      env:
-        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      with:
-        command: |
-          cd infra
-          pulumi stack select dev
-          pulumi up --yes
-        secrets: |
-          - name: PULUMI_ACCESS_TOKEN
-            env: PULUMI_ACCESS_TOKEN
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Setup npm
+        run: npm install
+        working-directory: infra
+
+      - name: Prepare .env file
+        run: |
+          echo DB_PASSWORD=${{ secrets.DB_PASSWORD }} >> .env
+          echo DB_USERNAME=${{ secrets.DB_USERNAME }} >> .env
+          echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+          echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+          cp .env.dev infra/.env
+
+      - name: Deploy Pulumi stack
+        uses: pulumi/actions@v5
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        with:
+          work-dir: infra
+          stack-name: ${{ env.ENVIRONMENT }}
+          command: up

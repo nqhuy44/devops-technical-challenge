@@ -19,6 +19,10 @@ spec:
         environment: prod
         version: blue
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
       containers:
       - name: webapp
         image: webapp-image:prod-blue
@@ -60,6 +64,10 @@ spec:
         environment: prod
         version: green
     spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 2000
       containers:
       - name: webapp
         image: webapp-image:prod-green

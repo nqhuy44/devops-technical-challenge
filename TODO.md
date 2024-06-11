@@ -1,5 +1,5 @@
-#To do list
-## TLS/SSL
+# To do list
+## 1. TLS/SSL
 ### Route53
 - Provision a domain
 - Create CNAME record point to loadbalancer which created when deploy `nginx ingress controller`
@@ -16,15 +16,32 @@
       secretName: tls-secret
 ```
 
-## Monitoring
-### Prometheus
-Implement Prometheus in cluster by using helmchart and deploy by pulumi
-- Customs helm values:
+## 2. Monitoring
+### Prometheus (monitor)
+Implement Prometheus in cluster by using helm
+- Custom helm values:
   - Custom expose ports
   - Authen method JWT (recommend) or BasicAuth
   - Custom scrape config and labels
 - Export metrics to external:
   - Update open ports in security groups
   - Optional individual ingress for metrics or ingress controller
-- Grafana Instance
-  - Connect to Exported prometheus by
+Grafana Instance
+  - Connect to Exported prometheus by expose port and credentials
+  - Setup Dashboard monitor metrics
+### Datadog (monitor and logs)
+Implement Datadog in cluster by using helm
+- Custom helm values:
+  - Token key to access Datadog tenant
+  - Filter logs if need
+- Deployment update annotation:
+  - filter unnecessary logs
+  - relabels log ingress
+
+## 3. CI/CD
+### Lint and unit test
+- Implement lint rules and unit test in application code
+- Ajust stage `lint-and-test` in pipline (which is commented)
+### Component and Integration test
+- Implement integrate with other tools in Github
+- Implemnet more stage or individual workflow

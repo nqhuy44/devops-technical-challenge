@@ -13,4 +13,4 @@ commonLabels:
 configMapGenerator:
 - name: webapp-config
   files:
-    - .env.dev
+    - .env

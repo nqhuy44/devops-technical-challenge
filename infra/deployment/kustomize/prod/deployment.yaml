@@ -1,14 +1,14 @@
+# dev/patch-dev.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: webapp-deployment-blue
+  name: webapp-deployment
   labels:
     app: webapp
-    environment: prod
-    version: blue
+    environment: dev
   namespace: webapp
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: webapp
@@ -16,27 +16,8 @@ spec:
     metadata:
       labels:
         app: webapp
-        environment: prod
-        version: blue
-
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: webapp-deployment-green
-  labels:
-    app: webapp
-    environment: prod
-    version: green
-  namespace: webapp
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: webapp
-  template:
-    metadata:
-      labels:
-        app: webapp
-        environment: prod
-        version: green
+        environment: dev
+    spec:
+      containers:
+      - name: webapp
+        image: webapp-image:prod
