@@ -4,8 +4,11 @@ import { provider } from "../eks";
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
-
-const customValues = yaml.load(fs.readFileSync(`${__dirname}/helm/${pulumi.getStack()}/postgres.yaml`, 'utf8')) as pulumi.Inputs;
+const postgresConfigPath = `${__dirname}/helm/${pulumi.getStack()}/postgres.yaml`;
+let customValues: pulumi.Inputs | undefined;
+if (fs.existsSync(postgresConfigPath)) {
+    customValues = yaml.load(fs.readFileSync(postgresConfigPath, 'utf8')) as pulumi.Inputs;
+}
 
 const namespace = new k8s.core.v1.Namespace("postgresql", {}, { provider });
 

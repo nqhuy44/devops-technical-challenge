@@ -22,7 +22,7 @@ spec:
         fsGroup: 2000
       containers:
       - name: webapp
-        image: webapp-image:dev
+        image: 364952172961.dkr.ecr.ap-southeast-1.amazonaws.com/webapp-image:dev
         ports:
         - name: webapp
           containerPort: 3000

@@ -41,7 +41,7 @@ Implement Datadog in cluster by using helm
 ## 3. CI/CD
 ### Lint and unit test
 - Implement lint rules and unit test in application code
-- Ajust stage `lint-and-test` in pipline (which is commented)
+- Adjust stage `lint` and `unit-test` in pipline (which is commented)
 ### Component and Integration test
 - Implement integrate with other tools in Github
 - Implemnet more stage or individual workflow

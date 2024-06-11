@@ -6,10 +6,18 @@ import { tags } from "../config";
 import * as fs from 'fs';
 import * as yaml from 'js-yaml';
 
+const nginxConfigPath = `${__dirname}/helm/${pulumi.getStack()}/nginx.yaml`;
+let customValues: pulumi.Inputs | undefined;
 
-const customValues = yaml.load(fs.readFileSync(`${__dirname}/helm/${pulumi.getStack()}/nginx.yaml`, 'utf8')) as pulumi.Inputs;
+if (fs.existsSync(nginxConfigPath)) {
+    customValues = yaml.load(fs.readFileSync(nginxConfigPath, 'utf8')) as pulumi.Inputs;
+}
 
-const namespace = new k8s.core.v1.Namespace("nginx-ingress", {}, { provider });
+console.log(customValues);
+
+const namespace = new k8s.core.v1.Namespace("nginx-ingress", {
+    metadata: { name: "nginx-ingress" },
+}, { provider });
 
 let ingressControllerServiceUrl: any;
 

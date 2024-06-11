@@ -17,7 +17,3 @@ spec:
       labels:
         app: webapp
         environment: dev
-    spec:
-      containers:
-      - name: webapp
-        image: webapp-image:dev
