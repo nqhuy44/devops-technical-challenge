@@ -12,7 +12,6 @@ on:
 env:
   # AWS_REGION: ${{ secrets.AWS_REGION }}
   # ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-  IMAGE_TAG: ${GITHUB_SHA::6}
   ENVIRONMENT: dev
   env: dev
 
@@ -84,24 +83,32 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Set IMAGE_TAG
+        id: set_tag
+        run: echo "IMAGE_TAG=$(git rev-parse --short "$GITHUB_SHA")"
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
         run: |
+          IMAGE_TAG=$(git rev-parse --short "$GITHUB_SHA")
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$ENVIRONMENT
 
       - name: Scan Docker image
+        env:
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
-          aws ecr start-image-scan --repository-name ${{ secrets.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
-          aws ecr wait image-scan-complete --repository-name ${{ secrets.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
-          aws ecr describe-image-scan-findings --repository-name ${{ secrets.ECR_REPOSITORY }} --image-id imageTag=${{ env.IMAGE_TAG }}
+          aws ecr start-image-scan --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
+          aws ecr wait image-scan-complete --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
+          aws ecr describe-image-scan-findings --repository-name $ECR_REPOSITORY --image-id imageTag=$IMAGE_TAG
 
   deploy:
     name: Deploy
